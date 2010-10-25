@@ -10,7 +10,10 @@
 <h1 id="subject"><%=h mail[:subject] %></h1>
 <div><p id="date" style="font-size:0.8em;"><%= mail[:date].to_s %></div>
 <div id="source" style="border: solid 1px #666; background:white; padding:2em;">
-<p><%= mail[:source] %></p>
+<%= mail[:body] %>
+</div>
+<div id="text" style="border: solid 1px #666; background: white; padding: 2em;">
+<pre><%= mail[:text_body] %></pre>
 </div>
 </body>
 </html>

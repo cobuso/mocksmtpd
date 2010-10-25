@@ -6,6 +6,7 @@ require 'yaml'
 require 'erb'
 require 'nkf'
 require 'smtpserver'
+require 'mail'
 
 class Mocksmtpd
   VERSION = '0.0.3'
@@ -243,41 +244,32 @@ class Mocksmtpd
     save_mail(mail)
     save_index(mail)
   end
-
-  def parse_mail(src, sender, recipients)
-    src = NKF.nkf("-wm", src)
-    subject = src.match(/^Subject:\s*(.+)/i).to_a[1].to_s.strip
-    date = src.match(/^Date:\s*(.+)/i).to_a[1].to_s.strip
-
-    src = ERB::Util.h(src)
-    src = src.gsub(%r{https?://[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+},'<a href="\0">\0</a>')
-    src = src.gsub(/(?:\r\n|\r|\n)/, "<br />\n")
   
-    if date.empty?
-      date = Time.now
-    else
-      date = Time.parse(date)
-    end
-  
-    mail = {
+  def parse_mail(src,sender,recipients)
+    src = NKF.nkf("-wm", src) 
+    mail = Mail.read_from_string(src)
+    maildata = {
       :source => src,
-      :sender => sender,
-      :recipients => recipients,
-      :subject => subject,
-      :date => date,
+      :sender => mail.sender,
+      :recipients => mail.to.to_s,
+      :subject => mail.subject,
+      :date => mail.date,
+      :body => mail.html_part.body.decoded,
+      :text_body => mail.text_part.body.decoded
     }
-
+    
     format = "%Y%m%d%H%M%S"
-    fname = date.strftime(format) + ".html"
+    fname = mail.date.strftime(format) + ".html"
     while @inbox.join(fname).exist?
-      date += 1
-      fname = date.strftime(format) + ".html"
+      mail.date += 1
+      fname = mail.date.strftime(format) + ".html"
     end
-
-    mail[:file] = fname
-    mail[:path] = @inbox.join(fname)
-
-    return mail
+  
+    maildata[:file] = fname
+    maildata[:path] = @inbox.join(fname)
+  
+    return maildata
+    
   end
 
   def save_mail(mail)
