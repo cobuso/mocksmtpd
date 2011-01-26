@@ -8,6 +8,7 @@
 </head>
 <body style="background:#eee">
 <h1 id="subject"><%=h mail[:subject] %></h1>
+<p>Original: <a href="<%= mail[:txtfname] %>">view</a></p>
 <div><p id="date" style="font-size:0.8em;"><%= mail[:date].to_s %></div>
 <div id="source" style="border: solid 1px #666; background:white; padding:2em;">
 <%= mail[:body] %>

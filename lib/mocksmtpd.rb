@@ -264,9 +264,12 @@ class Mocksmtpd
       mail.date += 1
       fname = mail.date.strftime(format) + ".html"
     end
-  
+    txtfname = fname.gsub(/html$/,'txt')
+ 
     maildata[:file] = fname
+    maildata[:txtfile] = txtfname
     maildata[:path] = @inbox.join(fname)
+    maildata[:txtpath] = @inbox.join(txtfname)
   
     return maildata
     
@@ -275,6 +278,9 @@ class Mocksmtpd
   def save_mail(mail)
     open(mail[:path], "w") do |io|
       io << @templates[:mail].result(binding)
+    end
+    open(mail[:txtpath],"w") do |io|
+      io << mail[:source]
     end
     @logger.debug("mail saved: #{mail[:path]}")
   end
